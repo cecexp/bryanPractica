@@ -2,8 +2,8 @@ import { View } from "react-native";
 import { Button } from "react-native";
 import useAuth from "../hooks/useAuth";
 
-function HomePage() {
+function HomePage({navigation}) {
   const {authData, login, logout} = useAuth()
-  return (<View><Button title="logout" onPress={logout}></Button></View>)
+  return (<View><Button title="camera" onPress={()=>{navigation.navigate("camera")}}></Button></View>)
 }
 export default HomePage
