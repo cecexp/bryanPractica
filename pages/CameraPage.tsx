@@ -1,14 +1,15 @@
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { Cloudinary } from '@cloudinary/url-gen';
+import { CameraCapturedPicture, CameraView, useCameraPermissions } from 'expo-camera';
 import { CameraType } from 'expo-camera/build/legacy/Camera.types';
 import { useRef, useState } from 'react';
 import { Button, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
+import * as Crypto from 'expo-crypto';
 
 export default function CameraPage() {
   const [facing, setFacing] = useState('back' as any);
   const [permission, requestPermission] = useCameraPermissions();
-  const [photo, SetPhoto] = useState();
-  const cameraRef = useRef(null as any)
+  const [photo, SetPhoto] = useState<CameraCapturedPicture>();
+  const cameraRef = useRef<CameraView>(null)
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -31,14 +32,27 @@ export default function CameraPage() {
   function takePhoto(){
     if(cameraRef.current){
         cameraRef.current.takePictureAsync({
-            // base64:true,
+            base64:true,
             skipProcessing:true
-        }).then((PhotoData:any)=>{SetPhoto(PhotoData)})
+        }).then((PhotoData)=>{uploadCloudyRaw(PhotoData?.base64)})
     } 
     }
 
   function toggleCameraFacing() {
     setFacing((current:any) => (current === 'back' ? 'front' : 'back'));
+  }
+
+  async function uploadCloudyRaw(base64:string) {
+    const uuid = Crypto.randomUUID()
+    const base64image = "data:image/jpeg;base64," + base64
+    const formData = new FormData()
+    formData.append("file", base64image, "file")
+
+    formData.append("upload_preset", "vnh1crdn")
+    formData.append("public_id", uuid)
+    const response =  await fetch("https://api.cloudinary.com/v1_1/dhft3limy/image/upload",{method:"POST", body: formData}).then(res=>res.json()).catch(error=>error)
+    console.log(response)
+    
   }
 
   return (
